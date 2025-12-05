@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-title-row">
+  <div>
+    <h1 class="page-title">관심 설정</h1>
+    <p class="page-description">
+      우리 회사가 집중 모니터링할 <strong>발주기관</strong>과 <strong>키워드</strong>를 관리합니다.
+      설정값은 발주계획·사전공개·입찰공고 화면에서 필터링에 사용됩니다.
+    </p>
+  </div>
+</div>
+
+<section class="card card-filter">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">관심 기관</h2>
+      <p class="card-subtitle">
+        발주기관명에 이 문자열이 포함된 건만 보여줍니다. (예: "경상남도", "코레일테크")
+      </p>
+    </div>
+  </div>
+
+  <form class="prefs-form" method="post" action="/settings/preferences/orgs/add">
+    <input
+      type="text"
+      name="org_name"
+      class="input-text"
+      placeholder="관심 기관명 입력 후 Enter 또는 추가 클릭"
+      required
+    />
+    <button class="btn-secondary" type="submit">기관 추가</button>
+  </form>
+
+  <div class="chip-list">
+    {% if prefs.orgs %}
+      {% for org in prefs.orgs %}
+        <form method="post" action="/settings/preferences/orgs/delete" class="chip">
+          <input type="hidden" name="org_name" value="{{ org }}" />
+          <span class="chip-label">{{ org }}</span>
+          <button type="submit" class="chip-remove" title="삭제">×</button>
+        </form>
+      {% endfor %}
+    {% else %}
+      <p class="helper-text">아직 등록된 관심 기관이 없습니다.</p>
+    {% endif %}
+  </div>
+</section>
+
+<section class="card card-filter">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">관심 키워드</h2>
+      <p class="card-subtitle">
+        사업명·용도·규격 등에서 이 키워드가 포함된 건만 보여줍니다. (예: "AI", "스마트시티", "유지보수")
+      </p>
+    </div>
+  </div>
+
+  <form class="prefs-form" method="post" action="/settings/preferences/keywords/add">
+    <input
+      type="text"
+      name="keyword"
+      class="input-text"
+      placeholder="관심 키워드 입력 후 Enter 또는 추가 클릭"
+      required
+    />
+    <button class="btn-secondary" type="submit">키워드 추가</button>
+  </form>
+
+  <div class="chip-list">
+    {% if prefs.keywords %}
+      {% for kw in prefs.keywords %}
+        <form method="post" action="/settings/preferences/keywords/delete" class="chip chip-keyword">
+          <input type="hidden" name="keyword" value="{{ kw }}" />
+          <span class="chip-label">{{ kw }}</span>
+          <button type="submit" class="chip-remove" title="삭제">×</button>
+        </form>
+      {% endfor %}
+    {% else %}
+      <p class="helper-text">아직 등록된 관심 키워드가 없습니다.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

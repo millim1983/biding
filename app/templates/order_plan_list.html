@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-title-row">
+  <div>
+    <h1 class="page-title">발주계획 목록</h1>
+    <p class="page-description">
+      최근 6개월 기준 발주계획을 조회합니다. (조달청 OrderPlanSttusService 연계)
+    </p>
+  </div>
+  <div class="page-meta">
+    <div class="kpi-chip">
+        원본 {{ original_count }}건 중 <strong>{{ items|length }}</strong>건 표시
+      </div>
+      <div class="kpi-chip kpi-chip-subtle">
+        관심 기관 {{ prefs.orgs|length }}개 · 키워드 {{ prefs.keywords|length }}개
+      </div>
+  </div>
+</div>
+
+{% if error %}
+  <div class="alert alert-error">
+    <span class="alert-title">외부 API 오류</span>
+    <span class="alert-body">{{ error }}</span>
+    <p style="color:red;">{{ error }}</p>
+  </div>
+{% endif %}
+
+<!-- 검색/필터 영역은 나중에 확장 예정 (지금은 레이아웃만) -->
+<section class="card card-filter">
+  <div class="card-header">
+    <div>
+      <h2 class="card-title">검색 조건</h2>
+      <p class="card-subtitle">사업명·발주기관명 등으로 필터링 기능은 이후 단계에서 추가 예정입니다.</p>
+    </div>
+    <button class="btn-secondary" type="button" disabled>검색 (준비중)</button>
+  </div>
+</section>
+
+<section class="card card-table">
+  <div class="card-header">
+    <h2 class="card-title">발주계획 현황</h2>
+    <p class="card-subtitle">
+      발주계획통합번호와 관련 입찰공고번호는 이후 단계에서 사전공개·입찰공고·개찰결과와 연계됩니다.
+    </p>
+  </div>
+
+  <div class="table-wrapper">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>발주년도</th>
+          <th>발주기관명</th>
+          <th>사업명</th>
+          <th>업무구분</th>
+          <th class="th-right">합계발주금액</th>
+          <th>발주계획통합번호</th>
+          <th>관련 입찰공고번호</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% if items and items|length > 0 %}
+          {% for it in items %}
+          <tr>
+            <td>{{ it.orderYear }}</td>
+            <td>{{ it.orderInsttNm }}</td>
+            <td class="td-maintext">
+              {{ it.bizNm }}
+              {% if it.cnstwkRgnNm %}
+                <div class="td-subtext">
+                  {{ it.cnstwkRgnNm }} · {{ it.cnsttyDivNm }}
+                </div>
+              {% endif %}
+            </td>
+            <td>{{ it.bsnsDivNm }}</td>
+            <td class="td-right">
+              {{ "{:,}".format(it.sumOrderAmt|int) if it.sumOrderAmt is not none else "-" }}
+            </td>
+            <td class="td-mono">
+              {{ it.orderPlanUntyNo }}
+            </td>
+            <td class="td-mono">
+              {{ it.bidNtceNoList or "-" }}
+            </td>
+          </tr>
+          {% endfor %}
+        {% else %}
+          <tr>
+            <td colspan="7" class="td-empty">조회 결과가 없습니다.</td>
+          </tr>
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- 페이징 영역: 지금은 페이지 1만 있지만, 구조만 먼저 만들어 둠 -->
+  <div class="pagination-row">
+    {# 현재 페이지 번호 #}
+    {% set current = paging.pageNo if paging.pageNo is not none else paging['pageNo'] %}
+  
+    {# 이전 버튼 #}
+    {% if current > 1 %}
+      <a href="/order-plan/?page={{ current - 1 }}" class="btn-outline">이전</a>
+    {% else %}
+      <button class="btn-outline" type="button" disabled>이전</button>
+    {% endif %}
+  
+    {# 가운데 페이지 번호들 (현재 기준 앞뒤 2페이지씩) #}
+    <div class="pagination-pages">
+      {% set start = current - 2 %}
+      {% set end = current + 2 %}
+      {% if start < 1 %}{% set start = 1 %}{% endif %}
+      {% if end > total_pages %}{% set end = total_pages %}{% endif %}
+  
+      {% for p in range(start, end + 1) %}
+        {% if p == current %}
+          <span class="page-btn page-btn-active">{{ p }}</span>
+        {% else %}
+          <a href="/order-plan/?page={{ p }}" class="page-btn">{{ p }}</a>
+        {% endif %}
+      {% endfor %}
+    </div>
+  
+    {# 다음 버튼 #}
+    {% if current < total_pages %}
+      <a href="/order-plan/?page={{ current + 1 }}" class="btn-outline">다음</a>
+    {% else %}
+      <button class="btn-outline" type="button" disabled>다음</button>
+    {% endif %}
+  </div>
+  
+</section>
+{% endblock %}

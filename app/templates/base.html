@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>{{ title or "비딩앱" }}</title>
+
+  <!-- 구글 폰트 (Noto Sans KR) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- 커스텀 스타일 -->
+  <link rel="stylesheet" href="/static/css/style.css" />
+</head>
+<body>
+  <div class="app-root">
+    <!-- 상단 헤더 -->
+    <header class="app-header">
+      <div class="header-inner">
+        <div class="logo-area">
+          <div class="logo-mark">B</div>
+          <div class="logo-text">
+            <div class="logo-title">비딩앱</div>
+            <div class="logo-subtitle">발주·입찰 전주기 추적 대시보드</div>
+          </div>
+        </div>
+        <div class="header-right">
+          <span class="env-badge">DEV</span>
+        </div>
+      </div>
+
+      <!-- 상단 탭 네비게이션 -->
+      <nav class="nav-tabs">
+        <a href="/order-plan/" class="nav-tab {% if active_tab == 'order-plan' %}nav-tab-active{% endif %}">
+          발주계획
+        </a>
+        <a href="#" class="nav-tab nav-tab-disabled" title="준비 중입니다">
+          발주계획 사전공개 <span class="badge-muted">준비중</span>
+        </a>
+        <a href="#" class="nav-tab nav-tab-disabled" title="준비 중입니다">
+          입찰공고 <span class="badge-muted">준비중</span>
+        </a>
+        <a href="#" class="nav-tab nav-tab-disabled" title="준비 중입니다">
+          개찰결과 <span class="badge-muted">준비중</span>
+        </a>
+        <a href="/settings/preferences" class="nav-tab {% if active_tab == 'settings' %}nav-tab-active{% endif %}">
+            설정
+        </a>
+      </nav>
+    </header>
+
+    <!-- 메인 컨테이너 -->
+    <main class="app-main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="app-footer">
+      <span>© {{ 2025 }} 비딩앱 · 조달청 OpenAPI 연계</span>
+    </footer>
+  </div>
+</body>
+</html>
