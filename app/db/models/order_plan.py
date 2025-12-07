@@ -25,6 +25,10 @@ class OrderPlan(Base):
     order_instt_cd = Column(String(10))
     order_instt_nm = Column(String(200))
 
+    # 🔹 여기 추가
+    order_month = Column(String(2))   # "01" ~ "12"
+    order_ym = Column(String(6))      # "YYYYMM"
+
     biz_nm = Column(String(400))
     sum_order_amt = Column(Numeric(18, 0))
     ntce_ntice_yn = Column(String(1))

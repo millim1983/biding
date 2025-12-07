@@ -146,6 +146,8 @@ async def fetch_order_plan_search_page(
     num_of_rows: int,
     order_bgn_ym: str,
     order_end_ym: str,
+    inqry_bgn_dt: str | None = None,
+    inqry_end_dt: str | None = None,
     order_instt_cd: Optional[str] = None,
     order_instt_nm: Optional[str] = None,
     biz_nm: Optional[str] = None,
@@ -165,6 +167,12 @@ async def fetch_order_plan_search_page(
         "orderEndYm": order_end_ym,  # 발주종료년월 YYYYMM
     }
 
+    # ✅ 여기서 게시일시 파라미터를 실제 요청에 반영
+    if inqry_bgn_dt is not None:
+        params["inqryBgnDt"] = inqry_bgn_dt
+    if inqry_end_dt is not None:
+        params["inqryEndDt"] = inqry_end_dt
+
     if order_instt_cd:
         params["orderInsttCd"] = order_instt_cd
     if order_instt_nm:
@@ -180,26 +188,48 @@ async def fetch_order_plan_search_page(
         resp.raise_for_status()
         return resp.json()
 
+# app/services/order_plan_api.py
 
-def extract_order_plan_items_from_search(raw: Dict[str, Any]) -> list[Dict[str, Any]]:
+from typing import Any, Dict, List
+
+
+def extract_order_plan_items_from_search(raw: Dict[str, Any]) -> List[Dict[str, Any]]:
     """
-    검색 오퍼레이션 응답에서 item 리스트만 추출.
-    구조가 기존 getOrderPlanSttusListServc와 같으면
-    기존 extract_order_plan_items를 그냥 재사용해도 됨.
+    나라장터 발주계획 '검색' 오퍼레이션 응답에서 item 리스트만 꺼낸다.
+    - body.items가 dict일 수도 있고(list 래핑), list일 수도 있고, None일 수도 있어서
+      케이스를 전부 처리해준다.
     """
     try:
-        body = raw["response"]["body"]
-        items = body.get("items", {})
+        body = raw.get("response", {}).get("body", {})
+        items = body.get("items")
+
+        if items is None:
+            # items 자체가 없는 경우
+            return []
+
+        # 1) 어떤 API는 items 자체가 list인 경우
+        if isinstance(items, list):
+            return items
+
+        # 2) 대부분의 공공데이터 API는 items가 dict 이고, 그 안에 "item"이 들어있다.
         if isinstance(items, dict):
-            item = items.get("item")
-            if item is None:
+            value = items.get("item")
+            if value is None:
                 return []
-            if isinstance(item, list):
-                return item
-            return [item]
+            # item이 리스트인 경우
+            if isinstance(value, list):
+                return value
+            # item이 단일 객체(dict)인 경우
+            if isinstance(value, dict):
+                return [value]
+
+        # 예상 못 한 형태면 비워두되, 디버깅 위해 앞부분만 찍기
+        print("[PARSE-WARN] unexpected items structure:", str(items)[:200])
         return []
-    except KeyError:
+    except Exception as e:
+        print("[PARSE-ERR]", e, " raw snippet:", str(raw)[:300])
         return []
+
 
 
 def extract_paging_from_search(raw: Dict[str, Any]) -> Dict[str, Any]:
