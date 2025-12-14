@@ -1,0 +1,29 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  app:
+    image: python:3.12-slim
+    volumes:
+      - ./:/workspace:cached
+    working_dir: /workspace
+    command: sleep infinity
+    environment:
+      PYTHONUNBUFFERED: "1"
+      DATABASE_URL: "postgresql+psycopg://postgres:postgres@db:5432/postgres"
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
